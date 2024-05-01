@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-const userSchema = Schema({
+const userSchema = new Schema({
   username: {
     type: String,
     required: [true, 'User name is required'],
@@ -16,8 +16,9 @@ const userSchema = Schema({
   },
   email: {
     type: String,
-    required: [true, 'uSER email is required'],
+    required: [true, 'User email is required'],
     lowercase: true,
+    unique: true,
     trim: true,
     index: true
   },
@@ -58,7 +59,7 @@ userSchema.methods.generateAccessToken = function () {
       role: this.tole,
       fullname: this.fullname
     },
-    process.env.ACCESS_TOKEN_SECRECT,
+    process.env.ACCESS_TOKEN_SCERECT,
     {
       algorithm: 'HS256',
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY
@@ -70,10 +71,6 @@ userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
-      username: this.username,
-      role: this.tole,
-      fullname: this.fullname
     },
     process.env.REFRESH_TOKEN_SECRECT,
     {
@@ -83,6 +80,6 @@ userSchema.methods.generateRefreshToken = function () {
   )
 }
 
-const User = model('User', userSchema)
+const User = model("User", userSchema)
 
 export default User
