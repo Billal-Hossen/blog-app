@@ -24,4 +24,22 @@ const register = asyncHandler(async (req, res, next) => {
 
 })
 
-export { register }
+const login = asyncHandler(async (req, res, next) => {
+  const { username, email, password } = req.body
+  if ([username, email, password].some(field => field?.trim() === "")) {
+    throw new ApiError(400, "Required credentials!!")
+  }
+  const existUser = await findUserByEmailOrUserName(username, email)
+  if (!existUser) {
+    throw new ApiError(404, "User is not exist!!")
+  }
+  const accessToken = existUser.generateAccessToken()
+  const refreshToken = existUser.generateRefreshToken()
+  existUser.refreshToken = refreshToken
+
+  existUser.save({ validateBeforeSave: false })
+  res.status(201).json(new ApiRespne(200, { accessToken, refreshToken }, "User successfully loggedin"))
+
+})
+
+export { register, login }
